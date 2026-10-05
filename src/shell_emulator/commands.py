@@ -1,30 +1,16 @@
 """Команды эмулятора.
 
 Каждая команда — функция ``(shell, args) -> Result``, где ``args`` —
-список аргументов без имени команды. На этапе 1 ``ls`` и ``cd`` являются
-заглушками: они выводят своё имя и полученные аргументы. Команда
-``vfs-save`` сохраняет состояние VFS на диск.
+список аргументов без имени команды. Здесь собраны реестр команд и
+служебные команды ``exit`` и ``vfs-save``; остальные команды находятся в
+отдельных модулях.
 """
 
+from shell_emulator.nav_commands import cmd_cd, cmd_ls, cmd_pwd
 from shell_emulator.result import Result
 from shell_emulator.vfs import VfsError, save_vfs
 
 SINGLE_ARGUMENT = 1
-
-
-def _stub(name, args):
-    """Сформировать вывод команды-заглушки: имя и аргументы."""
-    return Result(output=f"команда: {name}, аргументы: {args!r}")
-
-
-def cmd_ls(shell, args):
-    """Заглушка команды ls."""
-    return _stub("ls", args)
-
-
-def cmd_cd(shell, args):
-    """Заглушка команды cd."""
-    return _stub("cd", args)
 
 
 def cmd_exit(shell, args):
@@ -48,6 +34,7 @@ def cmd_vfs_save(shell, args):
 COMMANDS = {
     "ls": cmd_ls,
     "cd": cmd_cd,
+    "pwd": cmd_pwd,
     "exit": cmd_exit,
     "vfs-save": cmd_vfs_save,
 }
