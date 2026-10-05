@@ -1,0 +1,22 @@
+# Этап 4: все режимы ls, cd, tree, tac на VFS deep
+pwd
+ls
+ls -l
+ls -a
+ls -l docs/work
+ls docs/personal src/app
+cd docs/work/2026
+pwd
+ls
+cd ../..
+pwd
+cd /src/app/utils
+ls -l
+cd
+tree
+tree docs/work
+tree -a src
+tac root.txt
+tac docs/work/plan.txt
+tac docs/index.txt docs/personal/notes.txt
+exit
