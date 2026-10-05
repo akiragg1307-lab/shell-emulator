@@ -1,0 +1,7 @@
+# Этап 3: все реализованные команды (ls и cd пока заглушки)
+ls
+ls -l "my dir" 'a b'
+cd /docs/work
+vfs-save out/vfs-copy
+ls out
+exit
