@@ -19,4 +19,3 @@ tree -a src
 tac root.txt
 tac docs/work/plan.txt
 tac docs/index.txt docs/personal/notes.txt
-exit

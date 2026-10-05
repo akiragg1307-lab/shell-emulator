@@ -12,4 +12,3 @@ chown dave index.txt
 ls -l
 cd /
 vfs-save out/stage5-copy
-exit
