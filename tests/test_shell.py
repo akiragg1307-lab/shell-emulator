@@ -1,8 +1,11 @@
 """Тесты ядра эмулятора на этапе 1 (заглушки и exit)."""
 
+import os
+import tempfile
 import unittest
 
 from shell_emulator.shell import Shell
+from shell_emulator.vfs import DirNode, FileNode, Vfs
 
 
 class ShellStubsTest(unittest.TestCase):
@@ -61,6 +64,43 @@ class ShellStubsTest(unittest.TestCase):
         result = self.shell.execute("exit now")
         self.assertFalse(result.ok)
         self.assertFalse(result.exit_requested)
+
+
+class VfsSaveCommandTest(unittest.TestCase):
+    """Проверки команды vfs-save."""
+
+    def setUp(self):
+        """Создать сеанс с небольшой VFS и временный каталог."""
+        vfs = Vfs()
+        folder = vfs.root.add(DirNode("dir"))
+        folder.add(FileNode("a.txt", b"abc"))
+        self.shell = Shell(vfs=vfs)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.tmp = tmp.name
+
+    def test_saves_to_disk(self):
+        """vfs-save записывает дерево VFS в указанный каталог."""
+        target = os.path.join(self.tmp, "my out")
+        result = self.shell.execute(f'vfs-save "{target}"')
+        self.assertTrue(result.ok)
+        path = os.path.join(target, "dir", "a.txt")
+        with open(path, "rb") as handle:
+            self.assertEqual(handle.read(), b"abc")
+
+    def test_requires_one_argument(self):
+        """Без аргумента или с лишними аргументами — ошибка."""
+        self.assertFalse(self.shell.execute("vfs-save").ok)
+        self.assertFalse(self.shell.execute("vfs-save a b").ok)
+
+    def test_target_is_file(self):
+        """Если путь указывает на файл, команда сообщает об ошибке."""
+        target = os.path.join(self.tmp, "file")
+        with open(target, "w", encoding="utf-8") as handle:
+            handle.write("x")
+        result = self.shell.execute(f'vfs-save "{target}"')
+        self.assertFalse(result.ok)
+        self.assertIn("vfs-save", result.error)
 
 
 if __name__ == "__main__":
