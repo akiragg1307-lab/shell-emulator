@@ -1,0 +1,15 @@
+# Этап 5: chown меняет состояние VFS только в памяти
+ls -l
+chown alice root.txt
+ls -l
+chown bob docs src
+ls -l
+chown -R carol docs/work
+ls -l docs/work
+tree docs
+cd docs
+chown dave index.txt
+ls -l
+cd /
+vfs-save out/stage5-copy
+exit
