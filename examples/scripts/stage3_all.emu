@@ -1,7 +1,8 @@
-# Этап 3: все реализованные команды (ls и cd пока заглушки)
+# Этап 3: команды этапов 1-3 и vfs-save (подходит для любой VFS)
+pwd
 ls
-ls -l "my dir" 'a b'
-cd /docs/work
+ls -l
+cd "/"
+tree
 vfs-save out/vfs-copy
-ls out
 exit
