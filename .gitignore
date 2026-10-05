@@ -1,0 +1,31 @@
+# Служебные файлы Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Виртуальные окружения
+.venv/
+venv/
+
+# Артефакты сборки и архивы
+build/
+dist/
+*.zip
+*.tar
+*.gz
+*.7z
+
+# Настройки редакторов и IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Системные файлы и секреты
+.DS_Store
+Thumbs.db
+token.txt
