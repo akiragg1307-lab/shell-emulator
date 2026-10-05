@@ -43,14 +43,22 @@ make test
 Без `make`: `PYTHONPATH=src python3 -m unittest discover -s tests -v`
 (в Windows: `set PYTHONPATH=src` и `python -m unittest discover -s tests`).
 
-## Команды (этап 1)
+## Команды
 
 | Команда | Описание |
 |---------|----------|
-| `ls [аргументы]` | заглушка: выводит имя и аргументы |
-| `cd [аргументы]` | заглушка: выводит имя и аргументы |
-| `exit` | закрывает окно эмулятора |
+| `ls [-l] [-a] [путь...]` | содержимое каталога; `-l` — тип, владелец и размер, `-a` — со скрытыми (`.имя`); при нескольких путях печатаются заголовки `путь:` |
+| `cd [путь]` | смена текущего каталога (абсолютные и относительные пути, `.`, `..`); без аргумента — корень VFS |
+| `pwd` | абсолютный путь текущего каталога |
+| `tree [-a] [путь]` | дерево каталогов и файлов с итогом `каталогов: N, файлов: M` |
+| `tac файл...` | строки файлов в обратном порядке |
 | `vfs-save ПУТЬ` | сохраняет состояние VFS в каталог `ПУТЬ` в исходном формате |
+| `exit` | закрывает окно эмулятора |
+
+Ошибки выводятся в стиле UNIX (`ls: невозможно получить доступ к 'x':
+Нет такого файла или каталога`, `cd: x: Не каталог`, `tac: x: Это каталог`).
+Если команда получила несколько путей и часть из них недоступна, вывод
+доступных путей не отменяется.
 
 Заголовок окна содержит имя VFS. Парсер корректно обрабатывает аргументы
 в двойных (`"a b"`, с экранированием `\"` и `\\`) и одинарных (`'a b'`)
@@ -122,6 +130,14 @@ make test
 `scripts/stage3_errors` (ошибка `vfs-save` останавливает скрипт) и
 `scripts/stage3_missing_vfs` (каталог VFS не существует). Сохранённые копии
 VFS попадают в каталог `out/` (он в `.gitignore`).
+
+## Скрипты ОС этапа 4
+
+`scripts/stage4_all` запускает эмулятор на VFS `deep` и стартовый скрипт
+`examples/scripts/stage4_all.emu` со всеми режимами `ls`, `cd`, `tree`,
+`tac`. `scripts/stage4_errors` по очереди запускает четыре скрипта с
+ошибками (`stage4_error_ls|cd|tree|tac.emu`); после каждой ошибки скрипт
+останавливается, окно нужно закрыть вручную.
 
 ## Примеры использования
 
@@ -221,4 +237,138 @@ $ python -m shell_emulator --vfs examples/vfs/no_such_vfs
 [отладка] prompt: '$ '
 [отладка] script: (не задан)
 [vfs] ошибка: каталог VFS не найден: examples/vfs/no_such_vfs
+```
+
+Все режимы команд этапа 4 (вывод окна):
+
+```
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage4_all.emu
+[заголовок окна] Эмулятор оболочки — deep
+[отладка] vfs: examples/vfs/deep
+[отладка] prompt: '$ '
+[отладка] script: examples/scripts/stage4_all.emu
+$ pwd
+/
+$ ls
+docs
+root.txt
+src
+$ ls -l
+d root          - docs
+- root         26 root.txt
+d root          - src
+$ ls -a
+docs
+root.txt
+src
+$ ls -l docs/work
+d root          - 2026
+- root         83 plan.txt
+$ ls docs/personal src/app
+docs/personal:
+notes.txt
+src/app:
+main.py
+utils
+$ cd docs/work/2026
+$ pwd
+/docs/work/2026
+$ ls
+q3
+report.txt
+$ cd ../..
+$ pwd
+/docs
+$ cd /src/app/utils
+$ ls -l
+- root         28 helpers.py
+$ cd
+$ tree
+.
+├── docs
+│   ├── index.txt
+│   ├── personal
+│   │   └── notes.txt
+│   └── work
+│       ├── 2026
+│       │   ├── q3
+│       │   │   └── summary.txt
+│       │   └── report.txt
+│       └── plan.txt
+├── root.txt
+└── src
+    └── app
+        ├── main.py
+        └── utils
+            └── helpers.py
+
+каталогов: 8, файлов: 8
+$ tree docs/work
+docs/work
+├── 2026
+│   ├── q3
+│   │   └── summary.txt
+│   └── report.txt
+└── plan.txt
+
+каталогов: 2, файлов: 3
+$ tree -a src
+src
+└── app
+    ├── main.py
+    └── utils
+        └── helpers.py
+
+каталогов: 2, файлов: 2
+$ tac root.txt
+Корневой файл
+$ tac docs/work/plan.txt
+Квартал 3
+Квартал 2
+Квартал 1
+План работ на год
+$ tac docs/index.txt docs/personal/notes.txt
+Документы
+Личные заметки
+$ exit
+```
+
+Ошибки команд этапа 4 (вывод окна):
+
+```
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage4_error_ls.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ ls docs
+index.txt
+personal
+work
+$ ls -z
+ls: неверная опция -- 'z'
+[скрипт] остановлен: ошибка в строке 3: ls -z
+
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage4_error_cd.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ cd docs
+$ cd /root.txt
+cd: /root.txt: Не каталог
+[скрипт] остановлен: ошибка в строке 3: cd /root.txt
+
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage4_error_tree.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ tree docs/personal
+docs/personal
+└── notes.txt
+
+каталогов: 0, файлов: 1
+$ tree root.txt
+tree: root.txt: Не каталог
+[скрипт] остановлен: ошибка в строке 3: tree root.txt
+
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage4_error_tac.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ tac root.txt
+Корневой файл
+$ tac docs
+tac: docs: Это каталог
+[скрипт] остановлен: ошибка в строке 3: tac docs
 ```
