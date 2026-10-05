@@ -99,7 +99,7 @@ make test
 
 | Скрипт | Что проверяет |
 |--------|---------------|
-| `scripts/stage2_all_params` | все три параметра вместе, скрипт завершается `exit` |
+| `scripts/stage2_all_params` | все три параметра вместе |
 | `scripts/stage2_prompt_only` | только `--prompt` |
 | `scripts/stage2_defaults` | запуск без параметров |
 | `scripts/stage2_script_error` | остановка скрипта на ошибке |
@@ -215,7 +215,6 @@ demo$ls -l "." '/'
 - root         48 people.csv
 - root        112 todo.txt
 demo$cd "/"
-demo$exit
 
 $ python -m shell_emulator --script examples/scripts/stage2_error.emu
 [заголовок окна] Эмулятор оболочки — vfs
@@ -278,7 +277,6 @@ $ tree
 каталогов: 8, файлов: 8
 $ vfs-save out/vfs-copy
 VFS сохранена в out/vfs-copy
-$ exit
 
 $ python -m shell_emulator --vfs examples/vfs/several --script examples/scripts/stage3_errors.emu
 [заголовок окна] Эмулятор оболочки — several
@@ -390,7 +388,6 @@ $ tac docs/work/plan.txt
 $ tac docs/index.txt docs/personal/notes.txt
 Документы
 Личные заметки
-$ exit
 ```
 
 Ошибки команд этапа 4 (вывод окна):
@@ -478,7 +475,6 @@ d carol         - work
 $ cd /
 $ vfs-save out/stage5-copy
 VFS сохранена в out/stage5-copy
-$ exit
 
 $ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage5_error_path.emu
 [заголовок окна] Эмулятор оболочки — deep
