@@ -1,0 +1,4 @@
+# Этап 5: ошибки аргументов chown
+chown -R alice docs
+chown alice
+ls -l

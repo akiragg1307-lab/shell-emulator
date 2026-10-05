@@ -1,0 +1,4 @@
+# Этап 5: chown для несуществующего пути
+chown alice root.txt
+chown bob no_such_file
+ls -l
