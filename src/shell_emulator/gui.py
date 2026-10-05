@@ -8,9 +8,11 @@ BACKGROUND = "#1e1e1e"
 FOREGROUND = "#d4d4d4"
 PROMPT_COLOR = "#6a9955"
 ERROR_COLOR = "#f48771"
+DEBUG_COLOR = "#808080"
 PADDING = 4
 TAG_PROMPT = "prompt"
 TAG_ERROR = "error"
+TAG_DEBUG = "debug"
 
 
 class ShellWindow:
@@ -35,6 +37,7 @@ class ShellWindow:
         )
         self.output.tag_configure(TAG_PROMPT, foreground=PROMPT_COLOR)
         self.output.tag_configure(TAG_ERROR, foreground=ERROR_COLOR)
+        self.output.tag_configure(TAG_DEBUG, foreground=DEBUG_COLOR)
         self.output.pack(fill=tk.BOTH, expand=True)
 
     def _build_input(self):
@@ -105,8 +108,14 @@ class ShellWindow:
             self._show_history()
 
 
-def run_gui(shell):
-    """Открыть окно эмулятора и запустить главный цикл."""
+def run_gui(shell, on_start=None):
+    """Открыть окно эмулятора и запустить главный цикл.
+
+    Если задан ``on_start``, он вызывается с окном сразу после его
+    отображения (например, для выполнения стартового скрипта).
+    """
     root = tk.Tk()
-    ShellWindow(root, shell)
+    window = ShellWindow(root, shell)
+    if on_start is not None:
+        root.after_idle(on_start, window)
     root.mainloop()
