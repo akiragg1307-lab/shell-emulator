@@ -2,10 +2,14 @@
 
 Каждая команда — функция ``(shell, args) -> Result``, где ``args`` —
 список аргументов без имени команды. На этапе 1 ``ls`` и ``cd`` являются
-заглушками: они выводят своё имя и полученные аргументы.
+заглушками: они выводят своё имя и полученные аргументы. Команда
+``vfs-save`` сохраняет состояние VFS на диск.
 """
 
 from shell_emulator.result import Result
+from shell_emulator.vfs import VfsError, save_vfs
+
+SINGLE_ARGUMENT = 1
 
 
 def _stub(name, args):
@@ -30,8 +34,20 @@ def cmd_exit(shell, args):
     return Result(exit_requested=True)
 
 
+def cmd_vfs_save(shell, args):
+    """Сохранить состояние VFS на диск: ``vfs-save путь``."""
+    if len(args) != SINGLE_ARGUMENT:
+        return Result(error="vfs-save: использование: vfs-save путь")
+    try:
+        save_vfs(shell.vfs, args[0])
+    except VfsError as exc:
+        return Result(error=f"vfs-save: {exc}")
+    return Result(output=f"VFS сохранена в {args[0]}")
+
+
 COMMANDS = {
     "ls": cmd_ls,
     "cd": cmd_cd,
     "exit": cmd_exit,
+    "vfs-save": cmd_vfs_save,
 }
