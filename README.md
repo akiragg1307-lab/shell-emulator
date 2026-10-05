@@ -156,21 +156,31 @@ stage5_all.emu`) и `scripts/stage5_errors` (три сценария с ошиб
 
 ## Примеры использования
 
-Сеанс в интерактивном режиме (приглашение по умолчанию — `$ `):
+Сеанс в интерактивном режиме на VFS `several` (приглашение по умолчанию — `$ `):
 
 ```
 $ ls
-команда: ls, аргументы: []
-$ ls -l /home "My Documents" 'a b'
-команда: ls, аргументы: ['-l', '/home', 'My Documents', 'a b']
-$ cd /usr/local
-команда: cd, аргументы: ['/usr/local']
+README.md
+lines.txt
+people.csv
+todo.txt
+$ ls -l "." '/'
+.:
+- root         83 README.md
+- root         78 lines.txt
+- root         48 people.csv
+- root        112 todo.txt
+/:
+- root         83 README.md
+- root         78 lines.txt
+- root         48 people.csv
+- root        112 todo.txt
 $ cd "dir with spaces"
-команда: cd, аргументы: ['dir with spaces']
+cd: dir with spaces: Нет такого файла или каталога
+$ ls "дерево
+ошибка разбора: незакрытая двойная кавычка
 $ echo
 echo: команда не найдена
-$ ls "незакрытая
-ошибка разбора: незакрытая двойная кавычка
 $ 
 $ exit now
 exit: слишком много аргументов
@@ -181,28 +191,40 @@ $ exit
 Запуск с параметрами и стартовым скриптом (вывод окна):
 
 ```
-$ python -m shell_emulator --vfs examples/vfs/demo --prompt "demo$ " --script examples/scripts/stage2_ok.emu
-[заголовок окна] Эмулятор оболочки — demo
-[отладка] vfs: examples/vfs/demo
-[отладка] prompt: 'demo$ '
+$ python -m shell_emulator --vfs examples/vfs/several --prompt "demo$ " --script examples/scripts/stage2_ok.emu
+[заголовок окна] Эмулятор оболочки — several
+[отладка] vfs: examples/vfs/several
+[отладка] prompt: 'demo$'
 [отладка] script: examples/scripts/stage2_ok.emu
-demo$ ls
-команда: ls, аргументы: []
-demo$ ls -l "папка с пробелами" 'a b'
-команда: ls, аргументы: ['-l', 'папка с пробелами', 'a b']
-demo$ cd /usr/local
-команда: cd, аргументы: ['/usr/local']
-demo$ exit
+demo$pwd
+/
+demo$ls
+README.md
+lines.txt
+people.csv
+todo.txt
+demo$ls -l "." '/'
+.:
+- root         83 README.md
+- root         78 lines.txt
+- root         48 people.csv
+- root        112 todo.txt
+/:
+- root         83 README.md
+- root         78 lines.txt
+- root         48 people.csv
+- root        112 todo.txt
+demo$cd "/"
+demo$exit
 
 $ python -m shell_emulator --script examples/scripts/stage2_error.emu
 [заголовок окна] Эмулятор оболочки — vfs
 [отладка] vfs: (не задан)
 [отладка] prompt: '$ '
 [отладка] script: examples/scripts/stage2_error.emu
-$ ls /home
-команда: ls, аргументы: ['/home']
-$ cd "my dir"
-команда: cd, аргументы: ['my dir']
+$ pwd
+/
+$ ls "."
 $ unknown_command arg
 unknown_command: команда не найдена
 [скрипт] остановлен: ошибка в строке 4: unknown_command arg
@@ -223,16 +245,39 @@ $ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/sta
 [отладка] vfs: examples/vfs/deep
 [отладка] prompt: '$ '
 [отладка] script: examples/scripts/stage3_all.emu
+$ pwd
+/
 $ ls
-команда: ls, аргументы: []
-$ ls -l "my dir" 'a b'
-команда: ls, аргументы: ['-l', 'my dir', 'a b']
-$ cd /docs/work
-команда: cd, аргументы: ['/docs/work']
+docs
+root.txt
+src
+$ ls -l
+d root          - docs
+- root         26 root.txt
+d root          - src
+$ cd "/"
+$ tree
+.
+├── docs
+│   ├── index.txt
+│   ├── personal
+│   │   └── notes.txt
+│   └── work
+│       ├── 2026
+│       │   ├── q3
+│       │   │   └── summary.txt
+│       │   └── report.txt
+│       └── plan.txt
+├── root.txt
+└── src
+    └── app
+        ├── main.py
+        └── utils
+            └── helpers.py
+
+каталогов: 8, файлов: 8
 $ vfs-save out/vfs-copy
 VFS сохранена в out/vfs-copy
-$ ls out
-команда: ls, аргументы: ['out']
 $ exit
 
 $ python -m shell_emulator --vfs examples/vfs/several --script examples/scripts/stage3_errors.emu
