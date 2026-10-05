@@ -16,7 +16,8 @@
 
 - `src/shell_emulator/` — исходный код эмулятора;
 - `tests/` — модульные тесты (`unittest`);
-- `examples/` — примеры стартовых скриптов (`*.emu`);
+- `examples/scripts/` — примеры стартовых скриптов (`*.emu`);
+- `examples/vfs/` — тестовые VFS: `minimal`, `several`, `deep`;
 - `scripts/` — скрипты ОС (`*.sh` и `*.bat`) для проверки параметров;
 - `Makefile`, `run.sh`, `run.bat` — запуск приложения и тестов.
 
@@ -49,6 +50,7 @@ make test
 | `ls [аргументы]` | заглушка: выводит имя и аргументы |
 | `cd [аргументы]` | заглушка: выводит имя и аргументы |
 | `exit` | закрывает окно эмулятора |
+| `vfs-save ПУТЬ` | сохраняет состояние VFS в каталог `ПУТЬ` в исходном формате |
 
 Заголовок окна содержит имя VFS. Парсер корректно обрабатывает аргументы
 в двойных (`"a b"`, с экранированием `\"` и `\\`) и одинарных (`'a b'`)
@@ -92,6 +94,34 @@ make test
 | `scripts/stage2_defaults` | запуск без параметров |
 | `scripts/stage2_script_error` | остановка скрипта на ошибке |
 | `scripts/stage2_missing_script` | отсутствующий файл скрипта |
+
+## Виртуальная файловая система (этап 3)
+
+Источник VFS — каталог на диске (параметр `--vfs`). При запуске он целиком
+читается в память (`src/shell_emulator/vfs.py`); все операции выполняются
+над деревом в памяти, данные на диске не распаковываются и не изменяются.
+Если каталог не найден, в окне выводится сообщение `[vfs] ошибка: ...`, а
+работа продолжается с пустой VFS.
+
+Команда `vfs-save ПУТЬ` записывает текущее состояние VFS в каталог `ПУТЬ`
+(он создаётся при необходимости, одноимённые файлы перезаписываются) в том
+же формате — обычное дерево каталогов и файлов. Ошибки (нет аргумента,
+цель — файл, нет прав) выводятся сообщением.
+
+Тестовые VFS в `examples/vfs/`:
+
+| Каталог | Содержимое |
+|---------|------------|
+| `minimal` | один файл |
+| `several` | несколько файлов в корне |
+| `deep` | вложенность 4 уровня (`docs/work/2026/q3`), файлы на каждом уровне |
+
+Скрипты ОС этапа 3 (`.sh` и `.bat`) запускают эмулятор с этими VFS и
+стартовым скриптом `examples/scripts/stage3_all.emu`:
+`scripts/stage3_minimal`, `scripts/stage3_several`, `scripts/stage3_deep`,
+`scripts/stage3_errors` (ошибка `vfs-save` останавливает скрипт) и
+`scripts/stage3_missing_vfs` (каталог VFS не существует). Сохранённые копии
+VFS попадают в каталог `out/` (он в `.gitignore`).
 
 ## Примеры использования
 
@@ -152,4 +182,43 @@ $ python -m shell_emulator --script examples/scripts/no_such_file.emu
 [отладка] prompt: '$ '
 [отладка] script: examples/scripts/no_such_file.emu
 [скрипт] ошибка: не удалось прочитать скрипт examples/scripts/no_such_file.emu: [Errno 2] No such file or directory: 'examples/scripts/no_such_file.emu'
+```
+
+Работа с VFS, `vfs-save` и обработка ошибок (вывод окна):
+
+```
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage3_all.emu
+[заголовок окна] Эмулятор оболочки — deep
+[отладка] vfs: examples/vfs/deep
+[отладка] prompt: '$ '
+[отладка] script: examples/scripts/stage3_all.emu
+$ ls
+команда: ls, аргументы: []
+$ ls -l "my dir" 'a b'
+команда: ls, аргументы: ['-l', 'my dir', 'a b']
+$ cd /docs/work
+команда: cd, аргументы: ['/docs/work']
+$ vfs-save out/vfs-copy
+VFS сохранена в out/vfs-copy
+$ ls out
+команда: ls, аргументы: ['out']
+$ exit
+
+$ python -m shell_emulator --vfs examples/vfs/several --script examples/scripts/stage3_errors.emu
+[заголовок окна] Эмулятор оболочки — several
+[отладка] vfs: examples/vfs/several
+[отладка] prompt: '$ '
+[отладка] script: examples/scripts/stage3_errors.emu
+$ vfs-save out/ok-copy
+VFS сохранена в out/ok-copy
+$ vfs-save
+vfs-save: использование: vfs-save путь
+[скрипт] остановлен: ошибка в строке 3: vfs-save
+
+$ python -m shell_emulator --vfs examples/vfs/no_such_vfs
+[заголовок окна] Эмулятор оболочки — no_such_vfs
+[отладка] vfs: examples/vfs/no_such_vfs
+[отладка] prompt: '$ '
+[отладка] script: (не задан)
+[vfs] ошибка: каталог VFS не найден: examples/vfs/no_such_vfs
 ```
