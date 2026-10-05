@@ -4,7 +4,7 @@ import os
 import tempfile
 import unittest
 
-from shell_emulator.app import make_startup, run_startup_script
+from shell_emulator.app import create_shell, make_startup, run_startup_script
 from shell_emulator.config import Config
 from shell_emulator.shell import Shell
 from shell_emulator.tags import TAG_DEBUG, TAG_ERROR
@@ -93,6 +93,39 @@ class StartupScriptTest(unittest.TestCase):
         make_startup(Config(script_path=path))(self.window)
         self.assertEqual(self.window.lines[0][1], TAG_DEBUG)
         self.assertIn("$ ls", self.window.texts())
+
+
+EXAMPLE_VFS = os.path.join(os.path.dirname(__file__), os.pardir, "examples",
+                           "vfs", "minimal")
+
+
+class CreateShellTest(unittest.TestCase):
+    """Проверки создания сеанса с VFS."""
+
+    def test_loads_vfs_from_directory(self):
+        """VFS загружается в память из каталога --vfs."""
+        shell, errors = create_shell(Config(vfs_path=EXAMPLE_VFS))
+        self.assertEqual(errors, [])
+        self.assertIn("hello.txt", shell.vfs.root.children)
+        self.assertIn("minimal", shell.title)
+
+    def test_without_vfs_is_empty(self):
+        """Без --vfs используется пустая VFS."""
+        shell, errors = create_shell(Config())
+        self.assertEqual((errors, shell.vfs.root.children), ([], {}))
+
+    def test_missing_directory_reports_error(self):
+        """Ошибка загрузки возвращается сообщением, VFS пустая."""
+        shell, errors = create_shell(Config(vfs_path="no/such/dir"))
+        self.assertEqual(len(errors), 1)
+        self.assertIn("no/such/dir", errors[0])
+        self.assertEqual(shell.vfs.root.children, {})
+
+    def test_startup_shows_errors(self):
+        """Ошибки запуска выводятся в окне с тегом ошибки."""
+        window = FakeWindow()
+        make_startup(Config(), ["[vfs] ошибка: тест"])(window)
+        self.assertIn(("[vfs] ошибка: тест", TAG_ERROR), window.lines)
 
 
 if __name__ == "__main__":
