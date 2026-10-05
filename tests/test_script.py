@@ -29,8 +29,8 @@ class RunScriptTest(unittest.TestCase):
 
     def test_all_commands_executed(self):
         """Корректный скрипт выполняется целиком."""
-        self.assertTrue(self.run_lines(["ls", "cd /a"]))
-        self.assertEqual(self.executed, ["ls", "cd /a"])
+        self.assertTrue(self.run_lines(["ls", "pwd"]))
+        self.assertEqual(self.executed, ["ls", "pwd"])
         self.assertEqual(self.reports, [])
 
     def test_stops_on_first_error(self):

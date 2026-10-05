@@ -1,4 +1,4 @@
-"""Тесты ядра эмулятора на этапе 1 (заглушки и exit)."""
+"""Тесты ядра эмулятора: разбор строки, ошибки, exit и vfs-save."""
 
 import os
 import tempfile
@@ -8,8 +8,8 @@ from shell_emulator.shell import Shell
 from shell_emulator.vfs import DirNode, FileNode, Vfs
 
 
-class ShellStubsTest(unittest.TestCase):
-    """Проверки выполнения команд-заглушек и обработки ошибок."""
+class ShellCoreTest(unittest.TestCase):
+    """Проверки выполнения команд и обработки ошибок."""
 
     def setUp(self):
         """Создать новый сеанс для каждого теста."""
@@ -20,23 +20,22 @@ class ShellStubsTest(unittest.TestCase):
         shell = Shell(vfs_name="my_vfs")
         self.assertIn("my_vfs", shell.title)
 
-    def test_ls_prints_name_and_arguments(self):
-        """ls выводит своё имя и аргументы."""
-        result = self.shell.execute("ls -l /tmp")
-        self.assertTrue(result.ok)
-        self.assertIn("ls", result.output)
-        self.assertIn("['-l', '/tmp']", result.output)
-
-    def test_cd_prints_name_and_arguments(self):
-        """cd выводит своё имя и аргументы."""
-        result = self.shell.execute("cd /a")
-        self.assertIn("cd", result.output)
-        self.assertIn("['/a']", result.output)
+    def test_command_is_dispatched(self):
+        """Известная команда выполняется, результат без ошибки."""
+        self.assertTrue(self.shell.execute("ls").ok)
+        self.assertTrue(self.shell.execute("pwd").ok)
 
     def test_quoted_argument_is_single(self):
-        """Аргумент в кавычках передаётся как один."""
-        result = self.shell.execute('ls "dir with spaces" b')
-        self.assertIn("['dir with spaces', 'b']", result.output)
+        """Аргумент в кавычках передаётся как один (путь с пробелами)."""
+        folder = self.shell.vfs.root.add(DirNode("dir with spaces"))
+        folder.add(FileNode("a.txt", b"a"))
+        result = self.shell.execute('ls "dir with spaces"')
+        self.assertEqual(result.output, "a.txt")
+
+    def test_unquoted_spaces_split_arguments(self):
+        """Без кавычек путь с пробелом превращается в два аргумента."""
+        self.shell.vfs.root.add(DirNode("dir with spaces"))
+        self.assertFalse(self.shell.execute("ls dir with spaces").ok)
 
     def test_empty_line_is_ignored(self):
         """Пустая строка не даёт ни вывода, ни ошибки."""

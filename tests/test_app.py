@@ -56,11 +56,11 @@ class StartupScriptTest(unittest.TestCase):
 
     def test_input_and_output_are_shown(self):
         """В окне видны и ввод, и вывод команд скрипта."""
-        path = self.make_script("ls a\n")
+        path = self.make_script("pwd\n")
         self.assertTrue(run_startup_script(self.window, path))
         texts = self.window.texts()
-        self.assertEqual(texts[0], "$ ls a")
-        self.assertIn("['a']", texts[1])
+        self.assertEqual(texts[0], "$ pwd")
+        self.assertEqual(texts[1], "/")
 
     def test_error_stops_script_and_is_reported(self):
         """После ошибки скрипт останавливается и выводится сообщение."""

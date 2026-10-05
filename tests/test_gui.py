@@ -39,7 +39,7 @@ class ShellWindowTest(unittest.TestCase):
         """Введённая строка выводится вместе с приглашением."""
         self.window.run_command("ls a")
         self.assertEqual(self.written()[0], "> ls a")
-        self.assertIn("ls", self.written()[1])
+        self.assertIn("ls: невозможно получить доступ", self.written()[1])
 
     def test_error_is_written_with_error_tag(self):
         """Ошибка выводится с тегом ошибки."""
