@@ -9,6 +9,7 @@
 from shell_emulator.nav_commands import cmd_cd, cmd_ls, cmd_pwd
 from shell_emulator.result import Result
 from shell_emulator.vfs import VfsError, save_vfs
+from shell_emulator.view_commands import cmd_tac, cmd_tree
 
 SINGLE_ARGUMENT = 1
 
@@ -35,6 +36,8 @@ COMMANDS = {
     "ls": cmd_ls,
     "cd": cmd_cd,
     "pwd": cmd_pwd,
+    "tree": cmd_tree,
+    "tac": cmd_tac,
     "exit": cmd_exit,
     "vfs-save": cmd_vfs_save,
 }
