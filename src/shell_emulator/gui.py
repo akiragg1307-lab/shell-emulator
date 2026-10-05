@@ -3,6 +3,8 @@
 import tkinter as tk
 from tkinter import scrolledtext
 
+from shell_emulator.tags import TAG_DEBUG, TAG_ERROR, TAG_PROMPT
+
 FONT = ("Consolas", 11)
 BACKGROUND = "#1e1e1e"
 FOREGROUND = "#d4d4d4"
@@ -10,9 +12,6 @@ PROMPT_COLOR = "#6a9955"
 ERROR_COLOR = "#f48771"
 DEBUG_COLOR = "#808080"
 PADDING = 4
-TAG_PROMPT = "prompt"
-TAG_ERROR = "error"
-TAG_DEBUG = "debug"
 
 
 class ShellWindow:

@@ -1,9 +1,9 @@
 """Сборка приложения: настройки, отладочный вывод и стартовый скрипт."""
 
 from shell_emulator.config import debug_lines, parse_args
-from shell_emulator.gui import TAG_DEBUG, TAG_ERROR, run_gui
 from shell_emulator.script import ScriptError, load_script, run_script
 from shell_emulator.shell import Shell
+from shell_emulator.tags import TAG_DEBUG, TAG_ERROR
 
 
 def run_startup_script(window, path):
@@ -40,6 +40,8 @@ def make_startup(config):
 
 def main(argv=None):
     """Разобрать параметры и запустить эмулятор."""
+    from shell_emulator.gui import run_gui
+
     config = parse_args(argv)
     shell = Shell(vfs_name=config.vfs_name, prompt=config.prompt)
     run_gui(shell, make_startup(config))
