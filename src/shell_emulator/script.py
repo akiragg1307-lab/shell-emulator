@@ -18,7 +18,9 @@ def load_script(path):
         with open(path, encoding=ENCODING) as handle:
             return handle.read().splitlines()
     except (OSError, UnicodeDecodeError) as exc:
-        raise ScriptError(f"не удалось прочитать скрипт {path}: {exc}") from exc
+        reason = getattr(exc, "strerror", None) or exc
+        raise ScriptError(
+            f"не удалось прочитать скрипт {path}: {reason}") from exc
 
 
 def is_executable(line):
