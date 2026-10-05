@@ -52,6 +52,7 @@ make test
 | `pwd` | абсолютный путь текущего каталога |
 | `tree [-a] [путь]` | дерево каталогов и файлов с итогом `каталогов: N, файлов: M` |
 | `tac файл...` | строки файлов в обратном порядке |
+| `chown [-R] ВЛАДЕЛЕЦ ПУТЬ...` | смена владельца файлов и каталогов (только в памяти); `-R` — рекурсивно |
 | `vfs-save ПУТЬ` | сохраняет состояние VFS в каталог `ПУТЬ` в исходном формате |
 | `exit` | закрывает окно эмулятора |
 
@@ -138,6 +139,19 @@ VFS попадают в каталог `out/` (он в `.gitignore`).
 `tac`. `scripts/stage4_errors` по очереди запускает четыре скрипта с
 ошибками (`stage4_error_ls|cd|tree|tac.emu`); после каждой ошибки скрипт
 останавливается, окно нужно закрыть вручную.
+
+## Изменение владельца (этап 5)
+
+`chown [-R] ВЛАДЕЛЕЦ ПУТЬ...` меняет владельца элементов VFS; результат
+виден в `ls -l`. Изменение выполняется **только в памяти**: каталог на
+диске не затрагивается, а при `vfs-save` сохраняется структура и
+содержимое (в формате «каталог на диске» владельцев хранить негде).
+Группы (`владелец:группа`) не поддерживаются и дают ошибку; ошибка по
+одному из путей не отменяет смену владельца для остальных.
+
+Скрипты ОС: `scripts/stage5_all` (все режимы, `examples/scripts/
+stage5_all.emu`) и `scripts/stage5_errors` (три сценария с ошибками
+`stage5_error_path|args|group.emu`).
 
 ## Примеры использования
 
@@ -371,4 +385,73 @@ $ tac root.txt
 $ tac docs
 tac: docs: Это каталог
 [скрипт] остановлен: ошибка в строке 3: tac docs
+```
+
+chown: все режимы и ошибки (вывод окна):
+
+```
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage5_all.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ ls -l
+d root          - docs
+- root         26 root.txt
+d root          - src
+$ chown alice root.txt
+$ ls -l
+d root          - docs
+- alice        26 root.txt
+d root          - src
+$ chown bob docs src
+$ ls -l
+d bob           - docs
+- alice        26 root.txt
+d bob           - src
+$ chown -R carol docs/work
+$ ls -l docs/work
+d carol         - 2026
+- carol        83 plan.txt
+$ tree docs
+docs
+├── index.txt
+├── personal
+│   └── notes.txt
+└── work
+    ├── 2026
+    │   ├── q3
+    │   │   └── summary.txt
+    │   └── report.txt
+    └── plan.txt
+
+каталогов: 4, файлов: 5
+$ cd docs
+$ chown dave index.txt
+$ ls -l
+- dave         19 index.txt
+d root          - personal
+d carol         - work
+$ cd /
+$ vfs-save out/stage5-copy
+VFS сохранена в out/stage5-copy
+$ exit
+
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage5_error_path.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ chown alice root.txt
+$ chown bob no_such_file
+chown: невозможно получить доступ к 'no_such_file': Нет такого файла или каталога
+[скрипт] остановлен: ошибка в строке 3: chown bob no_such_file
+
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage5_error_args.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ chown -R alice docs
+$ chown alice
+chown: пропущен операнд
+использование: chown [-R] владелец путь...
+[скрипт] остановлен: ошибка в строке 3: chown alice
+
+$ python -m shell_emulator --vfs examples/vfs/deep --script examples/scripts/stage5_error_group.emu
+[заголовок окна] Эмулятор оболочки — deep
+$ chown alice:staff root.txt
+chown: группы не поддерживаются: 'alice:staff'
+[скрипт] остановлен: ошибка в строке 2: chown alice:staff root.txt
 ```
