@@ -11,18 +11,19 @@ DIR_SIZE_LABEL = "-"
 SINGLE = 1
 
 
-def parse_options(args):
+def parse_options(args, known=KNOWN_OPTIONS):
     """Отделить опции (``-l``, ``-a``, ``-la``) от остальных аргументов.
 
-    Возвращает пару (множество опций, список операндов). Для неизвестной
-    опции выбрасывается ``ValueError`` с её символом.
+    ``known`` — строка допустимых букв опций. Возвращает пару (множество
+    опций, список операндов). Для неизвестной опции выбрасывается
+    ``ValueError`` с её символом.
     """
     options = set()
     operands = []
     for arg in args:
         if arg.startswith(OPTION_PREFIX) and arg != OPTION_PREFIX:
             for letter in arg[len(OPTION_PREFIX):]:
-                if letter not in KNOWN_OPTIONS:
+                if letter not in known:
                     raise ValueError(letter)
                 options.add(letter)
         else:
