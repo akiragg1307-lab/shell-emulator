@@ -22,6 +22,7 @@ class Shell:
         self.vfs_name = vfs_name
         self.prompt = prompt
         self.vfs = vfs if vfs is not None else Vfs()
+        self.cwd = self.vfs.root
 
     @property
     def title(self):
