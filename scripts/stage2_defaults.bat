@@ -1,4 +1,4 @@
 @echo off
-rem Этап 2: запуск без параметров (значения по умолчанию)
+rem Stage 2 test script for the emulator (see the .sh version for details)
 cd /d "%~dp0.."
 call run.bat 

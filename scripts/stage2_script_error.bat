@@ -1,4 +1,4 @@
 @echo off
-rem Этап 2: стартовый скрипт с ошибкой (остановка и сообщение)
+rem Stage 2 test script for the emulator (see the .sh version for details)
 cd /d "%~dp0.."
 call run.bat --script examples\scripts\stage2_error.emu
