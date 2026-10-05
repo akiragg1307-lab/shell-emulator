@@ -3,6 +3,7 @@
 from shell_emulator.commands import COMMANDS
 from shell_emulator.parser import ParseError, parse_line
 from shell_emulator.result import Result
+from shell_emulator.vfs import Vfs
 
 DEFAULT_VFS_NAME = "vfs"
 DEFAULT_PROMPT = "$ "
@@ -12,10 +13,15 @@ TITLE_PREFIX = "Эмулятор оболочки"
 class Shell:
     """Состояние сеанса эмулятора и выполнение введённых команд."""
 
-    def __init__(self, vfs_name=DEFAULT_VFS_NAME, prompt=DEFAULT_PROMPT):
-        """Создать сеанс с именем VFS и приглашением к вводу."""
+    def __init__(self, vfs_name=DEFAULT_VFS_NAME, prompt=DEFAULT_PROMPT,
+                 vfs=None):
+        """Создать сеанс с именем VFS, приглашением и самой VFS.
+
+        Если ``vfs`` не задана, используется пустая VFS в памяти.
+        """
         self.vfs_name = vfs_name
         self.prompt = prompt
+        self.vfs = vfs if vfs is not None else Vfs()
 
     @property
     def title(self):
